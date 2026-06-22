@@ -16,9 +16,6 @@ Two different kind of applications are available:
   * Android SDK path is: `"${HOME}/ANDROID/sdk"`
   * Export it to `ANDROID_HOME` variable is needed during companion app compilation.
 * Folder `PebbleCommons` contains additional function used by the Notification project.
-* Folder `EXAMPLE_SCREENSHOTS`, when it's not empty, contains images relative to certain features that must be changed or checked.
-  * Additional details regarding each image can be found in: `EXAMPLE_SCREENSHOTS/SCREENSHOTS_DETAILS.md`.
-  * When the folder is empty, it must be ignored.
 
 ## Additional details about Pebble
 
