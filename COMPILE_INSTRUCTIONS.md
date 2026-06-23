@@ -90,6 +90,14 @@ git submodule update --init --recursive
 ```
 
 ---
+### Linting and error detection
+
+```bash
+cd PebbleNotificationCenter2/mobile
+
+# Run detekt
+./gradlew runDebugDetekt
+```
 
 ### Building from Command Line
 
