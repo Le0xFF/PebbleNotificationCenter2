@@ -50,6 +50,8 @@ class NotificationParser(
          sbn.postTime
       }
 
+      val extraInfo = NotificationExtraExtractor.extractExtraInfo(sbn)
+
       val largeImage = imageUri?.let { Icon.createWithContentUri(it) }
          ?: BundleCompat.getParcelable<Bitmap>(notification.extras, NotificationCompat.EXTRA_PICTURE, Bitmap::class.java)
             ?.let { Icon.createWithBitmap(it) }
@@ -82,7 +84,8 @@ class NotificationParser(
             notification.extras.getBoolean(NotificationConstants.KEY_FORCE_VIBRATE, false),
          overrideVibrationPattern = parseVibrationPattern(notification),
          iconDrawable = notification.smallIcon?.loadDrawable(context),
-         largeImage = largeImage
+         largeImage = largeImage,
+         extraInfo = extraInfo
       )
    }
 

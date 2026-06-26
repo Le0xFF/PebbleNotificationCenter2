@@ -12,6 +12,8 @@ import com.matejdro.pebblenotificationcenter.notification.history.HistoryInserte
 import com.matejdro.pebblenotificationcenter.notification.history.MuteReason
 import com.matejdro.pebblenotificationcenter.notification.model.Action
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
+import com.matejdro.pebblenotificationcenter.notification.parsing.NotificationDebugFormatter
+import com.matejdro.pebblenotificationcenter.notification.parsing.NotificationExtraExtractor
 import com.matejdro.pebblenotificationcenter.notification.model.PauseStatus
 import com.matejdro.pebblenotificationcenter.notification.model.ProcessedNotification
 import com.matejdro.pebblenotificationcenter.notification.model.any
@@ -48,11 +50,31 @@ class NotificationProcessor(
 
    private var nextVibration: AtomicReference<IntArray?> = AtomicReference(null)
 
+   private fun logSettings(settings: androidx.datastore.preferences.core.Preferences) {
+      for ((key, value) in settings.asMap().asSequence()) {
+         logcat { "   $key = $value" }
+      }
+   }
+
+   private fun logNotificationFlags(
+      suppressVibration: Boolean,
+      parsedNotification: ParsedNotification,
+   ) {
+      logcat {
+         "Notification flags: " +
+            "suppress=$suppressVibration " +
+            "silent=${parsedNotification.isSilent} " +
+            "dnd=${parsedNotification.isFilteredByDoNotDisturb}"
+      }
+   }
+
    suspend fun onNotificationPosted(parsedNotification: ParsedNotification, suppressVibration: Boolean = false) {
       val (affectedRules, settings) = ruleResolver.resolveRules(parsedNotification)
       logcat { "Notification ${parsedNotification.key} rules: $affectedRules" }
-      for (setting in settings.asMap()) {
-         logcat { "   ${setting.key} = ${setting.value}" }
+      logSettings(settings)
+      NotificationDebugFormatter.log(parsedNotification)
+      if (parsedNotification.extraInfo.isNotEmpty()) {
+         logcat { "Extra: ${NotificationExtraExtractor.formatExtraInfo(parsedNotification.extraInfo)}" }
       }
 
       val hideReason = shouldHide(parsedNotification, settings)
@@ -79,14 +101,12 @@ class NotificationProcessor(
          settings,
          pauseStatusBeforeInsert
       )
-
       val regexesToReplace = settings[RuleOption.regexReplacements]
       val regexReplacedParsedNotification = parsedNotification.copy(
          title = replaceRegexes(parsedNotification.title, regexesToReplace),
          subtitle = replaceRegexes(parsedNotification.subtitle, regexesToReplace),
          body = replaceRegexes(parsedNotification.body, regexesToReplace),
       )
-
       val initialProcessedNotification = ProcessedNotification(
          regexReplacedParsedNotification,
          0,
@@ -96,15 +116,9 @@ class NotificationProcessor(
          vibrated = vibrationPattern != null
       )
       val bucketId = watchSyncer.syncNotification(initialProcessedNotification, settings)
-
       val processedNotification = initialProcessedNotification.copy(bucketId = bucketId)
 
-      logcat {
-         "Notification flags: " +
-            "suppress=$suppressVibration " +
-            "silent=${parsedNotification.isSilent} " +
-            "dnd=${parsedNotification.isFilteredByDoNotDisturb}"
-      }
+      logNotificationFlags(suppressVibration, parsedNotification)
       if (vibrationPattern != null) {
          logcat { "Vibrating with ${vibrationPattern.contentToString()}" }
          nextVibration.set(vibrationPattern)

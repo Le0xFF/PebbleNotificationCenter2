@@ -37,6 +37,13 @@ data class ParsedNotification(
    val largeImage: Any? = null,
    val id: Int = 0,
    val tag: String? = null,
+
+   /**
+    * Additional debug information extracted from notification extras.
+    * These fields are not currently used by the app but can be helpful for debugging
+    * issues with specific apps sending notifications with custom extras.
+    */
+   val extraInfo: Map<String, String> = emptyMap(),
 )
 
 data class NativeAction(

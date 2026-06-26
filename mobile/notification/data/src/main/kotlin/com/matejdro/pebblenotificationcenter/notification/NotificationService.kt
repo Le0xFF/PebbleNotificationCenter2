@@ -10,6 +10,8 @@ import com.matejdro.pebblenotificationcenter.bluetooth.WatchappOpenController
 import com.matejdro.pebblenotificationcenter.common.di.NavigationInjectingApplication
 import com.matejdro.pebblenotificationcenter.notification.di.NotificationInject
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
+import com.matejdro.pebblenotificationcenter.notification.parsing.NotificationDebugFormatter
+import com.matejdro.pebblenotificationcenter.notification.parsing.NotificationExtraExtractor
 import com.matejdro.pebblenotificationcenter.notification.parsing.NotificationParser
 import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
 import com.matejdro.pebblenotificationcenter.rules.keys.get
@@ -90,6 +92,15 @@ class NotificationService : NotificationListenerService() {
       coroutineScope.launch {
          mutex.withLock {
             notificationProcessor.onNotificationsCleared()
+            for (sbn in activeNotifications) {
+               val parsed = parseNotification(sbn)
+               if (parsed != null) {
+                  NotificationDebugFormatter.log(parsed)
+                  notificationProcessor.onNotificationPosted(parsed, suppressVibration = true)
+               } else {
+                  logcat { "Notification ${sbn.key} has no text. Skipping..." }
+               }
+            }
          }
 
          reloadAllNotifications()
@@ -116,16 +127,16 @@ class NotificationService : NotificationListenerService() {
    }
 
    override fun onNotificationPosted(sbn: StatusBarNotification) {
-      logcat { "Notification ${sbn.key} posted" }
       coroutineScope.launch {
-         mutex.withLock {
-            val parsed = parseNotification(sbn)
-            if (parsed == null) {
-               logcat { "Notification ${sbn.key} has no text. Skipping..." }
-               return@launch
-            }
-            notificationProcessor.onNotificationPosted(parsed)
+         val parsed = parseNotification(sbn)
+         if (parsed == null) {
+            logcat { "Notification ${sbn.key} has no text. Skipping..." }
+            return@launch
          }
+         NotificationDebugFormatter.log(parsed)
+         val extraInfo = NotificationExtraExtractor.extractExtraInfo(sbn)
+         NotificationExtraExtractor.logExtraInfo("Processing notification ${sbn.key}", extraInfo)
+         notificationProcessor.onNotificationPosted(parsed)
       }
    }
 
