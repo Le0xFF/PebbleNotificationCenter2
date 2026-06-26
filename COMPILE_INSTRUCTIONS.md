@@ -92,6 +92,8 @@ git submodule update --init --recursive
 ---
 ### Linting and error detection
 
+Any indentation error MUST BE ignored.
+
 ```bash
 cd PebbleNotificationCenter2/mobile
 
