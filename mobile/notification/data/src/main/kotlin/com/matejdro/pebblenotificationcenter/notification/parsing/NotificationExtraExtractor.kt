@@ -10,7 +10,6 @@ object NotificationExtraExtractor {
    fun extractExtraInfo(sbn: StatusBarNotification): Map<String, String> {
       val notification = sbn.notification
       val extras = notification.extras ?: return emptyMap()
-
       val extraTitle = extras.getCharSequence(NotificationCompat.EXTRA_TITLE)?.toString()
       val extraTitleBig = extras.getCharSequence(NotificationCompat.EXTRA_TITLE_BIG)?.toString()
       val extraHiddenConversationTitle = extras.getCharSequence(NotificationCompat.EXTRA_HIDDEN_CONVERSATION_TITLE)?.toString()
