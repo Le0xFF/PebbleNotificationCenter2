@@ -12,6 +12,9 @@ object NotificationExtraExtractor {
       val extras = notification.extras ?: return emptyMap()
 
       val extraTitle = extras.getCharSequence(NotificationCompat.EXTRA_TITLE)?.toString()
+      val extraTitleBig = extras.getCharSequence(NotificationCompat.EXTRA_TITLE_BIG)?.toString()
+      val extraHiddenConversationTitle = extras.getCharSequence(NotificationCompat.EXTRA_HIDDEN_CONVERSATION_TITLE)?.toString()
+      val extraConversationTitle = extras.getCharSequence(NotificationCompat.EXTRA_CONVERSATION_TITLE)?.toString()
       val extraSubtitle = extras.getString("EXTRA_SUBTITLE")
       val extraBigText = extras.getCharSequence(NotificationCompat.EXTRA_BIG_TEXT)?.toString()
       val extraThreadId = extras.getString("EXTRA_THREAD_ID")
@@ -32,6 +35,9 @@ object NotificationExtraExtractor {
 
       return buildMap<String, String> {
          extraTitle?.takeIf { it.isNotBlank() }?.let { this["EXTRA_TITLE"] = it }
+         extraTitleBig?.takeIf { it.isNotBlank() }?.let { this["EXTRA_TITLE_BIG"] = it }
+         extraHiddenConversationTitle?.takeIf { it.isNotBlank() }?.let { this["EXTRA_HIDDEN_CONVERSATION_TITLE"] = it }
+         extraConversationTitle?.takeIf { it.isNotBlank() }?.let { this["EXTRA_CONVERSATION_TITLE"] = it }
          extraSubtitle?.takeIf { it.isNotBlank() }?.let { this["EXTRA_SUBTITLE"] = it }
          extraBigText?.takeIf { it.isNotBlank() }?.let { this["EXTRA_BIG_TEXT"] = it }
          extraThreadId?.takeIf { it.isNotBlank() }?.let { this["EXTRA_THREAD_ID"] = it }
