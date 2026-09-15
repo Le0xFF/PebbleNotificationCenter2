@@ -66,7 +66,7 @@ static const char* fonts[] = {
 void window_notification_ui_redraw_scroller_content()
 {
     const int16_t scroller_width = scroll_layer_get_content_size(scroll_layer).w;
-    const int16_t max_title_width = scroller_width - ICON_SIZE_AND_BOUNDS;
+    const int16_t max_title_width = scroller_width - ICON_SIZE_AND_BOUNDS - HORIZONTAL_TEXT_PADDING;
 
     title.font = fonts_get_system_font(fonts[window_notification_data.title_font]);
     subtitle.font = fonts_get_system_font(fonts[window_notification_data.subtitle_font]);
@@ -99,11 +99,15 @@ void window_notification_ui_redraw_scroller_content()
     // Even if the title and subtitle are very small, reserve at least ICON_SIZE_AND_BOUNDS height for the icon
     y = MAX(y, ICON_SIZE_AND_BOUNDS);
 
+#ifdef PBL_COLOR
+    if (window_notification_data.color != 0) y += MID_TEXT_VERTICAL_PADDING;
+#endif
+
     body.bounds.origin = GPoint(HORIZONTAL_TEXT_PADDING, y);
     body.bounds.size = graphics_text_layout_get_content_size(
         body.text,
         body.font,
-        GRect(HORIZONTAL_TEXT_PADDING, 0, scroller_width - HORIZONTAL_TEXT_PADDING * 2, 3000),
+        GRect(HORIZONTAL_TEXT_PADDING, 0, scroller_width - HORIZONTAL_TEXT_PADDING * 3, 3000),
         GTextOverflowModeWordWrap,
         GTextAlignmentLeft
     );
@@ -196,7 +200,7 @@ static void window_load(Window* window)
     layer_add_child(window_layer, dots_layer->layer);
     layer_add_child(window_layer, scroll_layer_get_layer(scroll_layer));
     scroll_layer_add_child(scroll_layer, scroll_content_layer);
-    scroll_layer_set_content_size(scroll_layer, GSize(screen_bounds.size.w - HORIZONTAL_TEXT_PADDING, 0));
+    scroll_layer_set_content_size(scroll_layer, GSize(screen_bounds.size.w, 0));
 
     window_set_click_config_provider(window, window_notification_buttons_config);
 
