@@ -32,12 +32,13 @@ class NotificationParser(
       channel: Any?,
       ranking: NotificationListenerService.Ranking? = null,
       showMessagingStyleChronologically: Boolean = false,
+      keepNameInSubtitle: Boolean = false,
    ): ParsedNotification? {
       val notification = sbn.notification
       val title = appNameProvider.getAppName(sbn.packageName)
 
       val (imageUri, messagingStyleText) = notification.parseMessagingStyle(showMessagingStyleChronologically)
-      val (conversationTitle, subtitle, text) = parseSubtitleAndBody(notification, messagingStyleText)
+      val (conversationTitle, subtitle, text) = parseSubtitleAndBody(notification, messagingStyleText, keepNameInSubtitle)
 
       if (subtitle.isBlank() && text.isNullOrBlank()) {
          return null
@@ -98,6 +99,7 @@ class NotificationParser(
    private fun parseSubtitleAndBody(
       notification: Notification,
       messagingStyleText: String?,
+      keepNameInSubtitle: Boolean,
    ): ParsedSubtitleBody {
       val extras = notification.extras
 
@@ -120,6 +122,10 @@ class NotificationParser(
             )
             ?.removeUselessCharacaters()
 
+      if (keepNameInSubtitle) {
+         return ParsedSubtitleBody(conversationTitle = "", subtitle = truncateForSubtitle(subtitle), body = text)
+      }
+
       val conversationTitle: String
       val updatedSubtitle: String
       val updatedText: String?
@@ -135,6 +141,14 @@ class NotificationParser(
          updatedText = text
       }
       return ParsedSubtitleBody(conversationTitle = conversationTitle, subtitle = updatedSubtitle, body = updatedText)
+   }
+
+   private fun truncateForSubtitle(name: String): String {
+      return if (name.length <= MAX_TITLE_LENGTH) {
+         name
+      } else {
+         name.take(MAX_TITLE_LENGTH - ELLIPSIS.length) + ELLIPSIS
+      }
    }
 
    private fun processChannel(notification: Notification, channel: Any?): Pair<String?, Boolean> {
@@ -253,6 +267,7 @@ private fun parseVibrationPattern(notification: Notification): List<Short>? {
 }
 
 private const val MAX_TITLE_LENGTH = 20
+private const val ELLIPSIS = "..."
 private val CONTROL_CHARACTERS = Regex("\\p{Cf}|\\p{M}")
 
 private data class ParsedSubtitleBody(

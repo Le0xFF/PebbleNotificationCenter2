@@ -52,6 +52,10 @@ object RuleOption {
    // the watch. The "who said what" lives in the body for messaging notifications, so this just removes the noise.
    val hideSubtitle = BooleanPreferenceKeyWithDefault("hide_subtitle", false)
 
+   // When enabled, a sender/group name that does not fit in the subtitle is kept there and truncated with
+   // trailing dots instead of being moved into the message body.
+   val keepNameInSubtitle = BooleanPreferenceKeyWithDefault("keep_name_in_subtitle", false)
+
    val autoAppPause = BooleanPreferenceKeyWithDefault("auto_app_pause", false)
    val autoConversationPause = BooleanPreferenceKeyWithDefault("auto_conversation_pause", false)
 

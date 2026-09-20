@@ -1,7 +1,11 @@
 package com.matejdro.pebblenotificationcenter.notification
 
+import android.os.Build
+import android.service.notification.StatusBarNotification
+import androidx.core.app.NotificationCompat
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
+import java.time.Instant
 import com.matejdro.pebblenotificationcenter.common.preferences.plus
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.rules.RULE_ID_DEFAULT_SETTINGS
@@ -61,6 +65,27 @@ data class ResolvedRules(
    val involvedRules: List<String>,
    val preferences: Preferences,
 )
+
+// Resolves rule preferences from a raw StatusBarNotification, before parsing: builds a minimal
+// ParsedNotification (empty text fields) so rule matching works on pkg/channel/flags only.
+suspend fun RuleResolver.rulesPreferencesFor(sbn: StatusBarNotification): Preferences =
+   resolveRules(
+      ParsedNotification(
+         key = sbn.key,
+         pkg = sbn.packageName,
+         title = "",
+         subtitle = "",
+         body = "",
+         timestamp = Instant.ofEpochMilli(sbn.postTime),
+         channel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) sbn.notification.channelId else null,
+         isOngoing = sbn.isOngoing,
+         groupSummary = NotificationCompat.isGroupSummary(sbn.notification),
+         localOnly = NotificationCompat.getLocalOnly(sbn.notification),
+         media = sbn.notification.extras.containsKey(NotificationCompat.EXTRA_MEDIA_SESSION),
+         id = sbn.id,
+         tag = sbn.tag,
+      )
+   ).preferences
 
 private fun ParsedNotification.containsRegex(regex: Regex): Boolean {
    return regex.containsMatchIn(title) || regex.containsMatchIn(subtitle) || regex.containsMatchIn(body)

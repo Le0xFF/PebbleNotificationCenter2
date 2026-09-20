@@ -12,6 +12,7 @@ import com.matejdro.pebblenotificationcenter.notification.di.NotificationInject
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import com.matejdro.pebblenotificationcenter.notification.parsing.NotificationParser
 import com.matejdro.pebblenotificationcenter.rules.GlobalPreferenceKeys
+import com.matejdro.pebblenotificationcenter.rules.RuleOption
 import com.matejdro.pebblenotificationcenter.rules.keys.get
 import dev.zacsweers.metro.Inject
 import dispatch.core.DefaultCoroutineScope
@@ -54,6 +55,9 @@ class NotificationService : NotificationListenerService() {
 
    @Inject
    private lateinit var watchOpenController: WatchappOpenController
+
+   @Inject
+   private lateinit var ruleResolver: RuleResolver
 
    private val mutex = Mutex()
 
@@ -141,10 +145,11 @@ class NotificationService : NotificationListenerService() {
       currentRanking.getRanking(sbn.key, ranking)
 
       return notificationParser.parse(
-         sbn,
-         getNotificationChannel(sbn),
-         ranking,
-         preferenceStore.data.first()[GlobalPreferenceKeys.showMessagingStyleChronologically]
+         sbn = sbn,
+         channel = getNotificationChannel(sbn),
+         ranking = ranking,
+         showMessagingStyleChronologically = preferenceStore.data.first()[GlobalPreferenceKeys.showMessagingStyleChronologically],
+         keepNameInSubtitle = ruleResolver.rulesPreferencesFor(sbn)[RuleOption.keepNameInSubtitle]
       )
    }
 

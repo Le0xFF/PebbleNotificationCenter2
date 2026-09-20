@@ -351,6 +351,80 @@ class NotificationParserTest {
    }
 
    @Test
+   fun parseNotificationWithLongSubtitleKeepsNameInSubtitleWhenEnabled() {
+      val longTitle = "A very very long long title title"
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle(longTitle)
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(
+         notification.toSbn(),
+         createDefaultSilentChannel(),
+         keepNameInSubtitle = true
+      ) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         longTitle.take(17) + "...",
+         "Description",
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
+      )
+   }
+
+   @Test
+   fun parseNotificationWithShortSubtitleUnchangedWhenKeepingNameInSubtitle() {
+      val shortTitle = "Short title"
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle(shortTitle)
+         .setContentText("Description")
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(
+         notification.toSbn(),
+         createDefaultSilentChannel(),
+         keepNameInSubtitle = true
+      ) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         shortTitle,
+         "Description",
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
+      )
+   }
+
+   @Test
+   fun parseNotificationWithLongTitleAndNoBodyIsNotDiscardedWhenKeepingNameInSubtitle() {
+      val longTitle = "A very very long long title title"
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setContentTitle(longTitle)
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(
+         notification.toSbn(),
+         createDefaultSilentChannel(),
+         keepNameInSubtitle = true
+      ) shouldBe ParsedNotification(
+         "0|com.matejdro.pebblenotificationcenter.notification.parsing|0|null|0",
+         TEST_PACKAGE,
+         "SMS App",
+         longTitle.take(17) + "...",
+         "",
+         Instant.ofEpochMilli(0L),
+         channel = testChannelOrNull(),
+      )
+   }
+
+   @Test
    fun removeUselessControllCharacters() {
       val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
          .setContentTitle("\u202CTitle")

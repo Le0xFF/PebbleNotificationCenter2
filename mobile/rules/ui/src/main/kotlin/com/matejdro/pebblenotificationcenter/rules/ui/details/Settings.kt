@@ -120,6 +120,13 @@ internal fun ColumnScope.Settings(
          summary = { Text(stringResource(R.string.setting_hide_subtitle_description)) }
       )
 
+      SwitchPreference(
+         value = preferences[RuleOption.keepNameInSubtitle],
+         onValueChange = { updatePreference(RuleOption.keepNameInSubtitle, it) },
+         title = { Text(stringResource(R.string.setting_keep_name_in_subtitle)) },
+         summary = { Text(stringResource(R.string.setting_keep_name_in_subtitle_description)) }
+      )
+
       RegexReplacementSetPreference(navigator, updatePreference, preferences)
 
       SwitchPreference(
