@@ -155,6 +155,59 @@ class NotificationProcessorTest {
    }
 
    @Test
+   fun `It should keep the name in the subtitle and not re-introduce it into the body when keeping name in subtitle`() = runTest {
+      // A long group title is kept (truncated) in the subtitle by the parser when "keep name in subtitle" is on;
+      // the raw name is NOT merged into the body, so the processor must forward both unchanged.
+      rulesRepository.updateRulePreferences(
+         RULE_ID_DEFAULT_SETTINGS,
+         RuleOption.keepNameInSubtitle setTo true,
+      )
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "Group Chat: Alice, B...",
+         "Alice: Hello",
+         Instant.ofEpochSecond(1_767_554_305),
+      )
+
+      processor.onNotificationPosted(notification)
+
+      assertSoftly(watchSyncer.syncedNotifications.first().systemData) {
+         subtitle shouldBe "Group Chat: Alice, B..."
+         body shouldBe "Alice: Hello"
+         conversationTitle shouldBe ""
+      }
+   }
+
+   @Test
+   fun `It should blank the subtitle without affecting the body when keeping name in subtitle and hiding subtitle`() = runTest {
+      rulesRepository.updateRulePreferences(
+         RULE_ID_DEFAULT_SETTINGS,
+         RuleOption.keepNameInSubtitle setTo true,
+         RuleOption.hideSubtitle setTo true,
+      )
+
+      val notification = ParsedNotification(
+         "key",
+         "com.app",
+         "Title",
+         "Group Chat: Alice, B...",
+         "Alice: Hello",
+         Instant.ofEpochSecond(1_767_554_305),
+      )
+
+      processor.onNotificationPosted(notification)
+
+      val synced = watchSyncer.syncedNotifications.first().systemData
+      assertSoftly(synced) {
+         subtitle shouldBe ""
+         body shouldBe "Alice: Hello"
+      }
+   }
+
+   @Test
    fun `It should forward notification deletions to the watch syncer`() = runTest {
       val notification = ParsedNotification(
          "key",
