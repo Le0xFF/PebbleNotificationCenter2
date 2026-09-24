@@ -257,6 +257,7 @@ Every AppMessage packet carries `dictionary key 0` = packet ID (uint8); payloads
 `NotificationService.onNotificationPosted(sbn)` → `parseNotification` (ranking + channel + pref `showMessagingStyleChronologically`) → `NotificationParser.parse`:
 
 - title = app name (`AppNameProvider`); subtitle = EXTRA_CONVERSATION_TITLE → HIDDEN_CONVERSATION_TITLE → TITLE → TITLE_BIG; body = messagingStyle (messages joined "Persona: text", ordered chronologically/anti-chronologically, first image recovered) → inbox style → BIG_TEXT → TEXT → SUMMARY_TEXT → SUB_TEXT → INFO_TEXT;
+  - with `hide_sender_in_body`, a one-to-one (private) conversation drops the per-line `"Persona: "` prefix — the name stays in the subtitle only; group conversations keep the prefix unchanged. Private vs group is decided by `MessagingStyle.isGroupConversation()` (`EXTRA_IS_GROUP_CONVERSATION`), the same signal AOSP uses — NOT by counting distinct senders, which misfires on 2-member groups where only one member appears in the retained messages;
 - "useless char" control (`\p{Cf}|\p{M}`);
 - **if title > 20 chars** (MAX_TITLE_LENGTH) → it goes to `conversationTitle` and is prepended to the body (`"$title\n$body"`), subtitle empty (so it can be removed with `hideSubtitle`);
 - `isSilent` from channel importance + vibrate/sound; `isFilteredByDoNotDisturb` from ranking `matchesInterruptionFilter() == false`; `forceVibrate` if app == NC itself with extra `KEY_FORCE_VIBRATE`; `overrideVibrationPattern` from extra; smallIcon → Drawable; largeImage (messaging image / EXTRA_PICTURE / EXTRA_PICTURE_ICON); color = notification.color or app color (`AppColorProvider`); if largeImage present → 📷 prefixed to subtitle.
@@ -292,6 +293,8 @@ Complete `RuleOption` catalog (keys with defaults, from `rules/api/.../RuleOptio
 | `font_subtitle` | `PebbleFont` | `GOTHIC_14_BOLD` |
 | `font_body` | `PebbleFont` | `GOTHIC_14` |
 | `hide_subtitle` | boolean | `false` |
+| `keep_name_in_subtitle` | boolean | `false` |
+| `hide_sender_in_body` | boolean | `false` |
 | `auto_app_pause` | boolean | `false` |
 | `auto_conversation_pause` | boolean | `false` |
 | `mute_silent_notifications` | boolean | `true` |
