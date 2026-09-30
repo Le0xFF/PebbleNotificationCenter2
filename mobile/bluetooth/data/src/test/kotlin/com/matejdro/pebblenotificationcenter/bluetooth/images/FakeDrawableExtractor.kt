@@ -5,7 +5,7 @@ import android.graphics.drawable.Icon
 
 class FakeDrawableExtractor : DrawableExtractor {
    private val outputMap = mutableMapOf<Any, ByteArray>()
-   var wasFilled: Boolean? = null
+   var wasZoomLevel: Int? = null
 
    fun registerOutput(drawable: Drawable, width: Int, height: Int, output: ByteArray, colorWatch: Boolean? = null) {
       outputMap[DrawableExtractorRequest(drawable, width, height, colorWatch)] = output
@@ -27,8 +27,8 @@ class FakeDrawableExtractor : DrawableExtractor {
          )
    }
 
-   override fun convertIconToBitmapBytes(icon: Icon, fill: Boolean): ByteArray {
-      wasFilled = fill
+   override fun convertIconToBitmapBytes(icon: Icon, zoomLevel: Int): ByteArray {
+      wasZoomLevel = zoomLevel
       return outputMap[icon] ?: error("Icon $icon does not exist. Existing fakes: ${outputMap.keys}")
    }
 

@@ -34,7 +34,7 @@ data class ParsedNotification(
    val iconDrawable: Any? = null,
 
    // Android type of this is android.graphics.drawable.Icon
-   val largeImage: Any? = null,
+   val images: List<Any> = emptyList(),
    val id: Int = 0,
    val tag: String? = null,
    /**

@@ -23,6 +23,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.matejdro.pebblenotificationcenter.notification.NotificationConstants
 import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotification
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -1244,10 +1245,54 @@ class NotificationParserTest {
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
          .shouldNotBeNull()
          .apply {
-            largeImage
-               .shouldNotBeNull()
+            images.shouldHaveSize(2)
+            images[0]
                .shouldBeInstanceOf<Icon>()
                .uri shouldBe Uri.parse("content://image/2")
+            images[1]
+               .shouldBeInstanceOf<Icon>()
+               .uri shouldBe Uri.parse("content://image/1")
+
+            subtitle shouldBe "\uD83D\uDCF7 Group Chat A"
+         }
+   }
+
+   @Test
+   fun parseAllImagesFromMessagingStyle() {
+      val notification = NotificationCompat.Builder(context, "TEST_CHANNEL")
+         .setStyle(
+            NotificationCompat.MessagingStyle(Person.Builder().setName("Group Chat A").build())
+               .setConversationTitle("Group Chat A")
+               .addMessage(
+                  NotificationCompat.MessagingStyle.Message("Message 1", 1L, Person.Builder().setName("Alice").build())
+                     .setData("image/png", "content://image/1".toUri())
+               )
+               .addMessage(
+                  NotificationCompat.MessagingStyle.Message("Message 2", 2L, Person.Builder().setName("Alice").build())
+                     .setData("image/jpg", "content://image/2".toUri())
+               )
+               .addMessage(
+                  NotificationCompat.MessagingStyle.Message("Message 3", 3L, Person.Builder().setName("Bob").build())
+                     .setData("image/webp", "content://image/3".toUri())
+               )
+         )
+         .setSmallIcon(0)
+         .setShowWhen(false)
+         .build()
+
+      notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
+         .shouldNotBeNull()
+         .apply {
+            images.shouldHaveSize(3)
+            images[0]
+               .shouldBeInstanceOf<Icon>()
+               .uri shouldBe Uri.parse("content://image/3")
+            images[1]
+               .shouldBeInstanceOf<Icon>()
+               .uri shouldBe Uri.parse("content://image/2")
+            images[2]
+               .shouldBeInstanceOf<Icon>()
+               .uri shouldBe Uri.parse("content://image/1")
 
             subtitle shouldBe "\uD83D\uDCF7 Group Chat A"
          }
@@ -1271,8 +1316,8 @@ class NotificationParserTest {
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
          .shouldNotBeNull()
          .apply {
-            largeImage
-               .shouldNotBeNull()
+            images.shouldHaveSize(1)
+            images[0]
                .shouldBeInstanceOf<Icon>()
                .type shouldBe Icon.TYPE_BITMAP
 
@@ -1306,8 +1351,8 @@ class NotificationParserTest {
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
          .shouldNotBeNull()
          .apply {
-            largeImage
-               .shouldNotBeNull()
+            images.shouldHaveSize(2)
+            images[0]
                .shouldBeInstanceOf<Icon>()
                .uri shouldBe Uri.parse("content://image/2")
 
