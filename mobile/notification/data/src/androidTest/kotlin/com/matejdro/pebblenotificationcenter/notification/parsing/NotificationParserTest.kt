@@ -191,8 +191,8 @@ class NotificationParserTest {
          TEST_PACKAGE,
          "SMS App",
          "My Duo",
-         "Message 2\n" +
-            "Alice: Message 1",
+         "Alice: Message 2\n" +
+            "Message 1",
          Instant.ofEpochMilli(2L),
          channel = testChannelOrNull(),
       )
@@ -400,8 +400,8 @@ class NotificationParserTest {
          TEST_PACKAGE,
          "SMS App",
          "Alice",
-         "Message 2\n" +
-            "Alice: Message 1",
+         "Alice: Message 2\n" +
+            "Message 1",
          Instant.ofEpochMilli(2L),
          channel = testChannelOrNull(),
       )
