@@ -3,8 +3,8 @@ package com.matejdro.pebblenotificationcenter.bluetooth.images
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.Icon
 import com.matejdro.pebble.bluetooth.WatchMetadata
 import com.matejdro.pebble.bluetooth.common.di.WatchappConnectionScope
 import dev.zacsweers.metro.ContributesBinding
@@ -12,7 +12,7 @@ import dev.zacsweers.metro.Inject
 
 interface DrawableExtractor {
    fun convertIconDrawableToBitmapBytes(drawable: Drawable, width: Int, height: Int): ByteArray
-   fun convertIconToBitmapBytes(icon: Icon, fill: Boolean): ByteArray
+   fun convertIconToBitmapBytes(bitmap: Any, fill: Boolean): ByteArray
 }
 
 @Inject
@@ -38,8 +38,9 @@ class DrawableExtractorImpl(
       return finalImage.encodeMonochromeImageIntoBytes()
    }
 
-   override fun convertIconToBitmapBytes(icon: Icon, fill: Boolean): ByteArray {
-      val drawable = icon.loadDrawable(context) ?: error("Drawable cannot be loaded. Icon: $icon")
+   override fun convertIconToBitmapBytes(bitmap: Any, fill: Boolean): ByteArray {
+      bitmap as Bitmap
+      val drawable = BitmapDrawable(context.resources, bitmap)
 
       val screenWidth = watchMetadata.screenWidth
       val screenHeight = watchMetadata.screenHeight
@@ -82,12 +83,12 @@ class DrawableExtractorImpl(
          drawable.setBounds(0, 0, targetWidth, targetHeight)
       }
 
-      val bitmap = Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)
-      val canvas = Canvas(bitmap)
+      val scaledBitmap = Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)
+      val canvas = Canvas(scaledBitmap)
 
       drawable.draw(canvas)
 
-      val finalImage = ImagePixels(bitmap)
+      val finalImage = ImagePixels(scaledBitmap)
          .dither(toColorScreen = watchMetadata.colorWatch)
 
       return if (watchMetadata.colorWatch) {

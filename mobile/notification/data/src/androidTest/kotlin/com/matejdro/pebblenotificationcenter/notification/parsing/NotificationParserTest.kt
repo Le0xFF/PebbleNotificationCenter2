@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Build
 import android.os.Parcel
@@ -25,7 +24,6 @@ import com.matejdro.pebblenotificationcenter.notification.model.ParsedNotificati
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.AssumptionViolatedException
 import org.junit.Test
 import java.time.Instant
@@ -33,9 +31,10 @@ import java.time.Instant
 class NotificationParserTest {
 
    private var providedAppColor: Int = 0
+   private var providedBitmap: Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ALPHA_8)
 
    private val context = ApplicationProvider.getApplicationContext<Context>()
-   private val notificationParser = NotificationParser(context, { "SMS App" }, { providedAppColor })
+   private val notificationParser = NotificationParser(context, { "SMS App" }, { providedAppColor }, { providedBitmap })
 
    @Test
    fun parseNotificationWithASimpleText() {
@@ -1244,10 +1243,7 @@ class NotificationParserTest {
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
          .shouldNotBeNull()
          .apply {
-            largeImage
-               .shouldNotBeNull()
-               .shouldBeInstanceOf<Icon>()
-               .uri shouldBe Uri.parse("content://image/2")
+            largeImage shouldBe providedBitmap
 
             subtitle shouldBe "\uD83D\uDCF7 Group Chat A"
          }
@@ -1271,10 +1267,7 @@ class NotificationParserTest {
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
          .shouldNotBeNull()
          .apply {
-            largeImage
-               .shouldNotBeNull()
-               .shouldBeInstanceOf<Icon>()
-               .type shouldBe Icon.TYPE_BITMAP
+            largeImage shouldBe providedBitmap
 
             subtitle shouldBe "\uD83D\uDCF7 Title"
          }
@@ -1306,10 +1299,7 @@ class NotificationParserTest {
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
          .shouldNotBeNull()
          .apply {
-            largeImage
-               .shouldNotBeNull()
-               .shouldBeInstanceOf<Icon>()
-               .uri shouldBe Uri.parse("content://image/2")
+            largeImage shouldBe providedBitmap
 
             subtitle shouldBe "Group Chat A \uD83D\uDCF7"
          }

@@ -26,6 +26,7 @@ class NotificationParser(
    private val context: Context,
    private val appNameProvider: AppNameProvider,
    private val appColorProvider: AppColorProvider,
+   private val bitmapLoader: BitmapLoader,
 ) {
    fun parse(
       sbn: StatusBarNotification,
@@ -53,10 +54,11 @@ class NotificationParser(
          sbn.postTime
       }
 
-      val largeImage = imageUri?.let { Icon.createWithContentUri(it) }
+      val largeImageIcon = imageUri?.let { Icon.createWithContentUri(it) }
          ?: BundleCompat.getParcelable<Bitmap>(notification.extras, NotificationCompat.EXTRA_PICTURE, Bitmap::class.java)
             ?.let { Icon.createWithBitmap(it) }
          ?: BundleCompat.getParcelable<Icon>(notification.extras, NotificationCompat.EXTRA_PICTURE_ICON, Icon::class.java)
+      val largeImage = largeImageIcon?.let { bitmapLoader.getBitmap(it) }
 
       val subtitleWithCameraEmoji = if (!subtitle.contains("\uD83D\uDCF7") && largeImage != null) {
          "\uD83D\uDCF7 $subtitle"
