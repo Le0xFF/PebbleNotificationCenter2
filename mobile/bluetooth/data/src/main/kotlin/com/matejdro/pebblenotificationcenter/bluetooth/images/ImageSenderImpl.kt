@@ -1,6 +1,5 @@
 package com.matejdro.pebblenotificationcenter.bluetooth.images
 
-import android.graphics.drawable.Icon
 import com.matejdro.pebble.bluetooth.WatchMetadata
 import com.matejdro.pebble.bluetooth.common.PacketQueue
 import com.matejdro.pebblenotificationcenter.bluetooth.PRIORITY_USER_INTERACTION
@@ -20,14 +19,12 @@ class ImageSenderImpl(
    @Suppress("MagicNumber") // Protocol constants
    override suspend fun showImageOnTheWatch(
       notificationId: UByte,
-      icon: Any,
+      icon: Any?,
       imageIndex: UByte,
       imageCount: UByte,
       zoomLevel: UByte,
       initialPush: Boolean,
    ) {
-      icon as Icon
-
       val pebbleBitmapData = try {
          drawableExtractor.convertIconToBitmapBytes(icon, zoomLevel.toInt())
       } catch (ignored: Exception) {

@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Build
 import android.os.Parcel
@@ -26,7 +25,6 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.AssumptionViolatedException
 import org.junit.Test
 import java.time.Instant
@@ -34,9 +32,10 @@ import java.time.Instant
 class NotificationParserTest {
 
    private var providedAppColor: Int = 0
+   private var providedBitmap: Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ALPHA_8)
 
    private val context = ApplicationProvider.getApplicationContext<Context>()
-   private val notificationParser = NotificationParser(context, { "SMS App" }, { providedAppColor })
+   private val notificationParser = NotificationParser(context, { "SMS App" }, { providedAppColor }, { _ -> providedBitmap })
 
    @Test
    fun parseNotificationWithASimpleText() {
@@ -192,8 +191,8 @@ class NotificationParserTest {
          TEST_PACKAGE,
          "SMS App",
          "My Duo",
-         "Message 2\n" +
-            "Alice: Message 1",
+         "Alice: Message 2\n" +
+            "Message 1",
          Instant.ofEpochMilli(2L),
          channel = testChannelOrNull(),
       )
@@ -401,8 +400,8 @@ class NotificationParserTest {
          TEST_PACKAGE,
          "SMS App",
          "Alice",
-         "Message 2\n" +
-            "Alice: Message 1",
+         "Alice: Message 2\n" +
+            "Message 1",
          Instant.ofEpochMilli(2L),
          channel = testChannelOrNull(),
       )
@@ -1246,12 +1245,9 @@ class NotificationParserTest {
          .shouldNotBeNull()
          .apply {
             images.shouldHaveSize(2)
-            images[0]
-               .shouldBeInstanceOf<Icon>()
-               .uri shouldBe Uri.parse("content://image/2")
-            images[1]
-               .shouldBeInstanceOf<Icon>()
-               .uri shouldBe Uri.parse("content://image/1")
+            images.all { it != null }
+            images[0] shouldBe providedBitmap
+            images[1] shouldBe providedBitmap
 
             subtitle shouldBe "\uD83D\uDCF7 Group Chat A"
          }
@@ -1284,15 +1280,10 @@ class NotificationParserTest {
          .shouldNotBeNull()
          .apply {
             images.shouldHaveSize(3)
-            images[0]
-               .shouldBeInstanceOf<Icon>()
-               .uri shouldBe Uri.parse("content://image/3")
-            images[1]
-               .shouldBeInstanceOf<Icon>()
-               .uri shouldBe Uri.parse("content://image/2")
-            images[2]
-               .shouldBeInstanceOf<Icon>()
-               .uri shouldBe Uri.parse("content://image/1")
+            images.all { it != null }
+            images[0] shouldBe providedBitmap
+            images[1] shouldBe providedBitmap
+            images[2] shouldBe providedBitmap
 
             subtitle shouldBe "\uD83D\uDCF7 Group Chat A"
          }
@@ -1317,9 +1308,7 @@ class NotificationParserTest {
          .shouldNotBeNull()
          .apply {
             images.shouldHaveSize(1)
-            images[0]
-               .shouldBeInstanceOf<Icon>()
-               .type shouldBe Icon.TYPE_BITMAP
+            images[0] shouldBe providedBitmap
 
             subtitle shouldBe "\uD83D\uDCF7 Title"
          }
@@ -1352,9 +1341,6 @@ class NotificationParserTest {
          .shouldNotBeNull()
          .apply {
             images.shouldHaveSize(2)
-            images[0]
-               .shouldBeInstanceOf<Icon>()
-               .uri shouldBe Uri.parse("content://image/2")
 
             subtitle shouldBe "Group Chat A \uD83D\uDCF7"
          }

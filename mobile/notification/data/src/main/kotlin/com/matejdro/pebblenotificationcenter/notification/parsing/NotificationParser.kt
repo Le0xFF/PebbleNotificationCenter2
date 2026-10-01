@@ -26,6 +26,7 @@ class NotificationParser(
    private val context: Context,
    private val appNameProvider: AppNameProvider,
    private val appColorProvider: AppColorProvider,
+   private val bitmapLoader: BitmapLoader,
 ) {
    fun parse(
       sbn: StatusBarNotification,
@@ -53,7 +54,7 @@ class NotificationParser(
          sbn.postTime
       }
 
-      val images = if (imageUris.isEmpty()) {
+      val imageIcons: List<Icon> = if (imageUris.isEmpty()) {
          listOfNotNull(
             BundleCompat.getParcelable<Bitmap>(notification.extras, NotificationCompat.EXTRA_PICTURE, Bitmap::class.java)
                ?.let { Icon.createWithBitmap(it) },
@@ -62,8 +63,13 @@ class NotificationParser(
       } else {
          imageUris.map { Icon.createWithContentUri(it) }
       }
+      // Decode eagerly (as soon as the notification is received): some apps only grant
+      // read permission on the image URI for a very short time, so the bitmap must be
+      // loaded now, not later when the image is shown on the watch. A null entry means
+      // that image could not be decoded and the watch shows "impossible to load" for it.
+      val images: List<Any?> = imageIcons.map { bitmapLoader.getBitmap(it) }
 
-      val subtitleWithCameraEmoji = if (!subtitle.contains("\uD83D\uDCF7") && images.isNotEmpty()) {
+      val subtitleWithCameraEmoji = if (!subtitle.contains("\uD83D\uDCF7") && images.any { it != null }) {
          "\uD83D\uDCF7 $subtitle"
       } else {
          subtitle

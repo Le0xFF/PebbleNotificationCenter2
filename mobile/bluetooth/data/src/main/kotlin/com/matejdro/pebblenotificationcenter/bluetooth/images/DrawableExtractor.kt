@@ -5,9 +5,6 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.Icon
-import android.net.Uri
-import android.os.Build
 import com.matejdro.pebble.bluetooth.WatchMetadata
 import com.matejdro.pebble.bluetooth.common.di.WatchappConnectionScope
 import dev.zacsweers.metro.ContributesBinding
@@ -16,7 +13,7 @@ import kotlin.math.roundToInt
 
 interface DrawableExtractor {
    fun convertIconDrawableToBitmapBytes(drawable: Drawable, width: Int, height: Int): ByteArray
-   fun convertIconToBitmapBytes(icon: Icon, zoomLevel: Int): ByteArray
+   fun convertIconToBitmapBytes(bitmap: Any?, zoomLevel: Int): ByteArray
 }
 
 @Inject
@@ -24,7 +21,6 @@ interface DrawableExtractor {
 class DrawableExtractorImpl(
    private val context: Context,
    private val watchMetadata: WatchMetadata,
-   private val iconBitmapCache: IconBitmapCache,
 ) : DrawableExtractor {
 
    override fun convertIconDrawableToBitmapBytes(
@@ -44,21 +40,9 @@ class DrawableExtractorImpl(
       return finalImage.encodeMonochromeImageIntoBytes()
    }
 
-   override fun convertIconToBitmapBytes(icon: Icon, zoomLevel: Int): ByteArray {
-      val uri: Uri? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) icon.uri else null
-      val cachedBitmap = uri?.let { iconBitmapCache.get(it) }
-
-      val drawable: Drawable = if (cachedBitmap != null) {
-         BitmapDrawable(cachedBitmap)
-      } else {
-         val loadedDrawable = icon.loadDrawable(context) ?: error("Drawable cannot be loaded. Icon: $icon")
-         if (uri != null && loadedDrawable.intrinsicWidth > 0 && loadedDrawable.intrinsicHeight > 0) {
-            val boundedBitmap = iconBitmapCache.put(uri, loadedDrawable)
-            BitmapDrawable(boundedBitmap)
-         } else {
-            loadedDrawable
-         }
-      }
+   override fun convertIconToBitmapBytes(bitmap: Any?, zoomLevel: Int): ByteArray {
+      val sourceBitmap = bitmap as? Bitmap ?: error("Image could not be loaded. bitmap: $bitmap")
+      val drawable = BitmapDrawable(context.resources, sourceBitmap)
 
       val screenWidth = watchMetadata.screenWidth
       val screenHeight = watchMetadata.screenHeight
@@ -80,12 +64,12 @@ class DrawableExtractorImpl(
 
       drawable.setBounds(0, 0, targetWidth, targetHeight)
 
-      val bitmap = Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)
-      val canvas = Canvas(bitmap)
+      val scaledBitmap = Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)
+      val canvas = Canvas(scaledBitmap)
 
       drawable.draw(canvas)
 
-      val finalImage = ImagePixels(bitmap)
+      val finalImage = ImagePixels(scaledBitmap)
          .dither(toColorScreen = watchMetadata.colorWatch)
 
       return if (watchMetadata.colorWatch) {
