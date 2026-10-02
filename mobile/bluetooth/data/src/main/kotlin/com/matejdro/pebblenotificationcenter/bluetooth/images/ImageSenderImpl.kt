@@ -26,7 +26,7 @@ class ImageSenderImpl(
       initialPush: Boolean,
    ) {
       val pebbleBitmapData = try {
-         drawableExtractor.convertIconToBitmapBytes(icon, zoomLevel.toInt())
+         drawableExtractor.convertIconToBitmapBytes(bitmap = icon, zoomLevel = zoomLevel.toInt())
       } catch (ignored: Exception) {
          null
       }
