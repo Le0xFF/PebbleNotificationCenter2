@@ -41,7 +41,7 @@ class DrawableExtractorImpl(
    }
 
    override fun convertIconToBitmapBytes(bitmap: Any?, zoomLevel: Int): ByteArray {
-      val sourceBitmap = bitmap as? Bitmap ?: error("Image could not be loaded. bitmap: $bitmap")
+      val sourceBitmap = bitmap as? Bitmap ?: error("Image could not be loaded. bitmap: ${bitmap ?: "null"}")
       val drawable = BitmapDrawable(context.resources, sourceBitmap)
 
       val screenWidth = watchMetadata.screenWidth
