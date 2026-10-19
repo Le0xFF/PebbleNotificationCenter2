@@ -7,22 +7,22 @@ androidGradlePlugin = "9.4.1"
 androidx-activity-compose = "1.13.0"
 androidx-compose-material3 = "1.4.0"
 androidx-compose-runtime = "1.12.1"
-androidx-core = "1.19.0"
+androidx-core = "1.19.1"
 androidx-core-splashscreen = "1.2.0"
 androidx-datastore = "1.2.1"
 androidx-lifecycle = "2.11.0"
-androidx-navigation3 = "1.1.7"
+androidx-navigation3 = "1.2.0"
 androidx-palette = "1.0.0"
 androidx-startup = "1.2.0"
 androidx-test-core = "1.7.0"
 androidx-test-runner = "1.7.0"
-androidx-workManager = "2.11.2"
+androidx-workManager = "2.12.0"
 composeDnd = "0.5.0"
 composePreference = "2.2.0"
 dependencyAnalysis = "3.19.2"
 desugarJdkLibs = "2.1.5"
 detekt = "2.0.0-alpha.6"
-detekt-compose = "0.6.6"
+detekt-compose = "0.6.7"
 dispatch = "1.0.0-beta10"
 jacoco = "0.8.15"
 junit = "6.1.3"
@@ -36,7 +36,7 @@ kotlin-serializationRuntime = "1.11.0"
 kotlinova = "4.1.2"
 ksp = "2.3.12"
 logcat = "0.4"
-metro = "1.4.4"
+metro = "1.4.5"
 moduleGraphAssert = "2.9.1"
 okio = "3.18.2"
 orgJson = "20251224"
@@ -45,12 +45,11 @@ pebblekit = "1.3.2"
 rebugger = "1.0.1"
 pngj = "2.1.0"
 showkase = "1.0.5"
-sqldelight = "2.3.2"
-tinylog = "2.8.0"
+sqldelight = "2.4.1"
+tinylog = "2.8.1"
 turbine = "1.2.1"
 unmock-androidJar = "17-robolectric-15733970"
 unmock-plugin = "0.11.0"
-versionCatalogUpdate = "1.1.1"
 
 [libraries]
 accompanist-adaptive = { module = "com.google.accompanist:accompanist-adaptive", version.ref = "accompanist" }
@@ -102,13 +101,12 @@ jacoco = { module = "org.jacoco:jacoco", version.ref = "jacoco" }
 junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 junit-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit" }
+junit-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit" }
 junit4 = { module = "junit:junit", version.ref = "junit4" }
-junit4-parameterinjector = { module = "com.google.testparameterinjector:test-parameter-injector", version.ref = "junit4-parameterinjector" }
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
 kotlin-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlin-coroutines" }
-kotlin-metadata = { module = "org.jetbrains.kotlin:kotlin-metadata-jvm", version.ref = "kotlin" }
 kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-plugin-compose = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 kotlin-plugin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
@@ -154,4 +152,3 @@ unmock-plugin = { module = "com.github.bjoernq:unmockplugin", version.ref = "unm
 detekt = { id = "dev.detekt", version.ref = "detekt" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 paparazzi = { id = "app.cash.paparazzi", version.ref = "paparazzi" }
-versionCatalogUpdate = { id = "nl.littlerobots.version-catalog-update", version.ref = "versionCatalogUpdate" }
