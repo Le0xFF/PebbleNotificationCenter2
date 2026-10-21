@@ -542,10 +542,7 @@ class ActionHandlerImplTest {
       handler.handleAction(2, 0) shouldBe true
       imageSender.lastSentNotificationId shouldBe 2u
       imageSender.lastSentIcon shouldBe icon
-      imageSender.lastSentImageIndex shouldBe 0u
-      imageSender.lastSentImageCount shouldBe 1u
-      imageSender.lastSentZoomLevel shouldBe 0u
-      imageSender.lastSentInitialPush shouldBe true
+      imageSender.lastFilled shouldBe false
       servicecontroller.lastTriggeredIntent shouldBe null
    }
 
