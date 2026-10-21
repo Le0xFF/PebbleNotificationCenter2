@@ -10,6 +10,7 @@ import androidx.core.graphics.drawable.toBitmapOrNull
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import java.io.FileNotFoundException
 
 fun interface BitmapLoader {
    fun getBitmap(icon: Icon): Bitmap?
@@ -30,14 +31,22 @@ class BitmapLoaderImpl @Inject constructor(private val context: Context) : Bitma
    }
 
    @RequiresApi(Build.VERSION_CODES.P)
-   @Suppress("UseKtx")
+   @Suppress("UseKtx", "SwallowedException")
    private fun getBitmapFromUriIcon(icon: Icon): Bitmap? {
       return if (icon.uri != null) {
-         context.contentResolver.openInputStream(icon.uri)?.use { stream ->
-            val bitmap = BitmapFactory.decodeStream(stream) ?: return@use null
-            val scaledHeight = LARGE_BITMAP_WIDTH_SIZE * bitmap.height / bitmap.width
-            if (bitmap.width <= LARGE_BITMAP_WIDTH_SIZE) return@use bitmap
-            Bitmap.createScaledBitmap(bitmap, LARGE_BITMAP_WIDTH_SIZE, scaledHeight, true)
+         try {
+            context.contentResolver.openInputStream(icon.uri)?.use { stream ->
+               val bitmap = BitmapFactory.decodeStream(stream) ?: return@use null
+               val scaledHeight = LARGE_BITMAP_WIDTH_SIZE * bitmap.height / bitmap.width
+               if (bitmap.width <= LARGE_BITMAP_WIDTH_SIZE) return@use bitmap
+               Bitmap.createScaledBitmap(bitmap, LARGE_BITMAP_WIDTH_SIZE, scaledHeight, true)
+            }
+         } catch (e: SecurityException) {
+            null // FileProvider not exported or permission denied
+         } catch (e: IllegalArgumentException) {
+            null // Invalid URI
+         } catch (e: FileNotFoundException) {
+            null // URI no longer available
          }
       } else {
          val drawable = icon.loadDrawable(context) ?: return null
