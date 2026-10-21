@@ -12,7 +12,7 @@ android {
 // Workaround for the https://issuetracker.google.com/issues/563732801
 configurations.configureEach {
    resolutionStrategy {
-      force("com.android.tools.androidtest:android-test-engine:1.0.7")
+      force("com.android.tools.androidtest:android-test-engine:1.0.8")
       force("com.android.tools.androidtest:android-test-engine-result-listener:1.0.7")
    }
 }
