@@ -1241,7 +1241,6 @@ class NotificationParserTest {
          .shouldNotBeNull()
          .apply {
             images.shouldHaveSize(1)
-            images.all { it != null }
             images[0] shouldBe providedBitmap
 
             subtitle shouldBe "\uD83D\uDCF7 Group Chat A"
@@ -1275,7 +1274,6 @@ class NotificationParserTest {
          .shouldNotBeNull()
          .apply {
             images.shouldHaveSize(3)
-            images.all { it != null }
             images[0] shouldBe providedBitmap
             images[1] shouldBe providedBitmap
             images[2] shouldBe providedBitmap

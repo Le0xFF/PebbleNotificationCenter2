@@ -266,8 +266,7 @@ class NotificationProcessor(
             add(Action.Snooze(title = context.getString(R.string.snooze), id = size.toUByte()))
          }
 
-         val decodedImages = parsedNotification.images.filter { it != null }
-         decodedImages.forEachIndexed { index, _ ->
+         parsedNotification.images.forEachIndexed { index, _ ->
             val title = context.getString(R.string.show_image_n, index + 1)
             add(Action.ShowImage(title = title, id = size.toUByte(), imageIndex = index))
          }
