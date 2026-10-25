@@ -54,15 +54,15 @@ class NotificationParser(
          sbn.postTime
       }
 
-      val imageIcons: List<Icon> = if (imageUris.isEmpty()) {
-         listOfNotNull(
-            BundleCompat.getParcelable<Bitmap>(notification.extras, NotificationCompat.EXTRA_PICTURE, Bitmap::class.java)
-               ?.let { Icon.createWithBitmap(it) },
-            BundleCompat.getParcelable<Icon>(notification.extras, NotificationCompat.EXTRA_PICTURE_ICON, Icon::class.java),
-         )
-      } else {
-         imageUris.map { Icon.createWithContentUri(it) }
-      }
+      // All image sources are merged instead of one replacing the other, so a notification providing both
+      // shows all of its images: the messaging-style image URIs first, then the EXTRA_PICTURE (bitmap) and
+      // EXTRA_PICTURE_ICON (icon) extras. No deduplication is performed: some apps set EXTRA_PICTURE as a
+      // duplicate of the first messaging image, which is acceptable.
+      val imageIcons: List<Icon> = imageUris.map { Icon.createWithContentUri(it) } + listOfNotNull(
+         BundleCompat.getParcelable<Bitmap>(notification.extras, NotificationCompat.EXTRA_PICTURE, Bitmap::class.java)
+            ?.let { Icon.createWithBitmap(it) },
+         BundleCompat.getParcelable<Icon>(notification.extras, NotificationCompat.EXTRA_PICTURE_ICON, Icon::class.java),
+      )
       // Decode eagerly (as soon as the notification is received): some apps only grant
       // read permission on the image URI for a very short time, so the bitmap must be
       // loaded now, not later when the image is shown on the watch. An image that could
