@@ -65,11 +65,11 @@ class NotificationParser(
       }
       // Decode eagerly (as soon as the notification is received): some apps only grant
       // read permission on the image URI for a very short time, so the bitmap must be
-      // loaded now, not later when the image is shown on the watch. A null entry means
-      // that image could not be decoded and the watch shows "impossible to load" for it.
-      val images: List<Any?> = imageIcons.map { bitmapLoader.getBitmap(it) }
+      // loaded now, not later when the image is shown on the watch. An image that could
+      // not be decoded is simply omitted.
+      val images: List<Any> = imageIcons.mapNotNull { bitmapLoader.getBitmap(it) }
 
-      val subtitleWithCameraEmoji = if (!subtitle.contains("\uD83D\uDCF7") && images.any { it != null }) {
+      val subtitleWithCameraEmoji = if (!subtitle.contains("\uD83D\uDCF7") && images.isNotEmpty()) {
          "\uD83D\uDCF7 $subtitle"
       } else {
          subtitle
