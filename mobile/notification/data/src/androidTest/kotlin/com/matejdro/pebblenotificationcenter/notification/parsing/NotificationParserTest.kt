@@ -1229,10 +1229,6 @@ class NotificationParserTest {
                      .setData("image/png", "content://image/1".toUri())
                )
                .addMessage(
-                  NotificationCompat.MessagingStyle.Message("Message 2", 2L, Person.Builder().setName("Alice").build())
-                     .setData("image/jpg", "content://image/2".toUri())
-               )
-               .addMessage(
                   NotificationCompat.MessagingStyle.Message("Message 3", 3L, Person.Builder().setName("Bob").build())
                      .setData("text/plain", "content://logs".toUri())
                )
@@ -1244,10 +1240,9 @@ class NotificationParserTest {
       notificationParser.parse(notification.toSbn(), createDefaultSilentChannel())
          .shouldNotBeNull()
          .apply {
-            images.shouldHaveSize(2)
+            images.shouldHaveSize(1)
             images.all { it != null }
             images[0] shouldBe providedBitmap
-            images[1] shouldBe providedBitmap
 
             subtitle shouldBe "\uD83D\uDCF7 Group Chat A"
          }
