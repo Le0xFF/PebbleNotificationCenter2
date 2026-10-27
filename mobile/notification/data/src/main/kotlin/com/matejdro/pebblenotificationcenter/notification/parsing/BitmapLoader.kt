@@ -1,11 +1,10 @@
 package com.matejdro.pebblenotificationcenter.notification.parsing
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Icon
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.core.graphics.drawable.toBitmapOrNull
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
@@ -18,19 +17,9 @@ fun interface BitmapLoader {
 
 @ContributesBinding(AppScope::class)
 class BitmapLoaderImpl @Inject constructor(private val context: Context) : BitmapLoader {
-   override fun getBitmap(icon: Icon): Bitmap? {
-      return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-         getBitmapFromUriIcon(icon)
-      } else {
-         val drawable = icon.loadDrawable(context) ?: return null
-         drawable.toBitmapOrNull(
-            width = LARGE_BITMAP_WIDTH_SIZE,
-            height = LARGE_BITMAP_WIDTH_SIZE * drawable.intrinsicHeight / drawable.intrinsicWidth
-         )
-      }
-   }
+   override fun getBitmap(icon: Icon): Bitmap? = getBitmapFromUriIcon(icon)
 
-   @RequiresApi(Build.VERSION_CODES.P)
+   @SuppressLint("NewApi") // Icon.getUri() is API 23+; minSdk 24 covers it
    @Suppress("UseKtx", "SwallowedException")
    private fun getBitmapFromUriIcon(icon: Icon): Bitmap? {
       return if (icon.uri != null) {
