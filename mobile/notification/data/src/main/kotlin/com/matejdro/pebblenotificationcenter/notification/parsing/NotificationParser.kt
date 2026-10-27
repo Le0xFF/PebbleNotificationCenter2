@@ -11,6 +11,7 @@ import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
+import androidx.core.graphics.drawable.IconCompat
 import androidx.core.os.BundleCompat
 import com.matejdro.pebblenotificationcenter.notification.NotificationConstants
 import com.matejdro.pebblenotificationcenter.notification.R
@@ -58,10 +59,11 @@ class NotificationParser(
       // shows all of its images: the messaging-style image URIs first, then the EXTRA_PICTURE (bitmap) and
       // EXTRA_PICTURE_ICON (icon) extras. No deduplication is performed: some apps set EXTRA_PICTURE as a
       // duplicate of the first messaging image, which is acceptable.
-      val imageIcons: List<Icon> = imageUris.map { Icon.createWithContentUri(it) } + listOfNotNull(
+      val imageIcons: List<IconCompat> = imageUris.map { IconCompat.createWithContentUri(it) } + listOfNotNull(
          BundleCompat.getParcelable<Bitmap>(notification.extras, NotificationCompat.EXTRA_PICTURE, Bitmap::class.java)
-            ?.let { Icon.createWithBitmap(it) },
-         BundleCompat.getParcelable<Icon>(notification.extras, NotificationCompat.EXTRA_PICTURE_ICON, Icon::class.java),
+            ?.let { IconCompat.createWithBitmap(it) },
+         BundleCompat.getParcelable<Icon>(notification.extras, NotificationCompat.EXTRA_PICTURE_ICON, Icon::class.java)
+            ?.let { IconCompat.createFromIcon(context, it) },
       )
       // Decode eagerly (as soon as the notification is received): some apps only grant
       // read permission on the image URI for a very short time, so the bitmap must be
