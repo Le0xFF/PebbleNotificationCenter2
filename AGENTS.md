@@ -82,7 +82,10 @@ PebbleNotificationCenter2/
 │   │      ui:  RuleListScreen (drag&drop reorder), RuleDetailsScreen (+ dialogs per option)
 │   ├── history/            → api (HistoryEntry, HistoryRepository), data (SQLite), ui (HistoryScreen)
 │   ├── home/ui             → HomeScreen (tabs) + OnboardingScreen (permissions)
-│   ├── tools/ui            → ToolsScreen (global settings) + ActionOrderListScreen
+│   ├── tools/ui            → ToolsScreen (global settings) + ActionOrderListScreen; settings export/import
+│   │                        (zip of rules.json + global/per-rule DataStore proto files, FileProvider share via the
+│   │                         `settings_export` cache-path, SAF OpenDocument import, process kill after import
+│   │                         (the app closes; the user reopens it manually, as the confirmation dialog tells them))
 │   ├── tasker/             → api (TaskerTaskStarter, plugin constants), data (TaskerActionService, LegacyTaskerReceiver,
 │   │                          TaskerActionRunner, TaskerTaskStarterImpl, TaskerServiceInjector), ui (ToggleMuteScreen,
 │   │                          TaskerConfigurationActivity, TaskerTaskSetScreen)
@@ -342,13 +345,13 @@ Complete `GlobalPreferenceKeys` (from `rules/api/.../GlobalPreferenceKeys.kt`):
 
 ### Rules (`rules`)
 
-- Persistence: rule list in SQLite (`dbRule`: id, name, sortOrder — the default rule is id 1, not deletable/reorderable, created on-the-fly if missing); **each rule's payload is a dedicated `DataStore<Preferences>` file** (name = rule id, `DatastoreFactory`); copying a rule = new insertion + copy of the datastore.
+- Persistence: rule list in SQLite (`dbRule`: id, name, sortOrder — the default rule is id 1, not deletable/reorderable, created on-the-fly if missing); **each rule's payload is a dedicated `DataStore<Preferences>` file** (name = rule id, `DatastoreFactory`); copying a rule = new insertion + copy of the datastore. These per-rule files, together with the single global `preferences.preferences_pb`, are exactly what the settings export/import in `tools/ui` copies into (and overwrites from) the shared zip.
 - UI: `RuleListScreen` (reorder drag&drop, + create empty rule that "inherits" everything), `RuleDetailsScreen` (conditions + settings) with dialogs: `AppSelectionScreen`, `ChannelSelectionScreen`, `RegexReplacementSetEditScreen`, `StringLIstEditScreen`, `NumberListEditScreen`, `VibrationPatternScreen`, `NameEntryScreen` (details in `rules/ui`).
 
 ### Other modules
 
 - `history`: every notification (even muted/hidden) lands in the DB with its reason (`MuteReason`/`HideReason`) via `HistoryInserter`; `HistoryScreen` shows the list with reasons.
-- `tools/ui`: `ToolsScreen` (toggle mute watch/phone, action order, auto-close, wrap-around, messaging-style chronological, notify-on-reconnect, backlight, large status font) + `ActionOrderListScreen`.
+- `tools/ui`: `ToolsScreen` (toggle mute watch/phone, action order, auto-close, wrap-around, messaging-style chronological, notify-on-reconnect, backlight, large status font) + `ActionOrderListScreen`. Settings **export/import** (issue #92): "Export settings" builds a zip of `rules.json` (rule ids/names, kotlinx.serialization JSON via `tools/ui/settings/SettingsCodec.kt`) plus the global (`preferences.preferences_pb`, name in `GLOBAL_PREFERENCES_DATASTORE_NAME`) and per-rule `DataStore` proto files that exist on disk, and shares it through the existing FileProvider (authority `com.matejdro.pebblenotificationcenter2.logs`, `<cache-path name="settings_export">` in `app/src/main/res/xml/logging_file_paths.xml`); "Import settings" picks such a zip via SAF (`OpenDocument`), asks for confirmation, replaces the rule list through `RulesRepository.importRules` (explicit ids preserved, default rule guaranteed first, `sortOrder` renumbered `0..N-1`), overwrites the DataStore files (tmp + rename), deletes stale per-rule files, and kills the app process (`AndroidProcessKiller`, Metro `AppScope` binding) so all in-memory state is discarded and reloaded from disk when the app is next opened — there is no automatic relaunch: the confirmation dialog tells the user the app will close and they must open it again.
 - `tasker`: Tasker plugin — `TaskerActionService` (receives the broadcast from Tasker to toggle watch mute), `TaskerTaskStarter` (starts a Tasker profile as a notification action, `TaskerTask` in `Action`), configuration UI (`TaskerConfigurationActivity`, `TaskerTaskSetScreen`).
 - `home/ui`: `HomeScreen` (container of tabs: Rules / History / Tools) and `OnboardingScreen` (permissions: notification listener, companion device, notifications).
 - `common*` / `navigation-impl`: Material3 Compose theme, `ReorderableList` (dnd), `TabListDetailScene` (list-detail pattern with tabs), navigation keys for every screen (Navigation3 + kotlinova).
@@ -434,6 +437,7 @@ Complete `GlobalPreferenceKeys` (from `rules/api/.../GlobalPreferenceKeys.kt`):
 |---|---|
 | Add/modify a rule setting | `rules/api/RuleOption.kt` (+ key type in `rules/api/keys/`) → `RuleResolver`/`NotificationProcessor` if used in the pipeline → `WatchSyncerImpl` if synced into a bucket → UI dialog in `rules/ui/details/` (`Settings.kt`, `Dialogs.kt`, `Conditions.kt`) and screens in the dialogs |
 | Add a global setting | `GlobalPreferenceKeys.kt` + `ToolsScreen.kt` (+ possibly new dialogs) + if it goes to the watch: bucket 1 flag in `WatchSyncerImpl.syncPreferences` AND parsing in `watch/src/data/preferences.c` (and use in `packets.c`/UI) + `protocol.md` |
+| Settings import/export | `tools/ui/settings/SettingsCodec.kt` (rules.json JSON + zip-entry classification) + `ToolsViewModel.exportSettings()`/`importSettings()` (+ `ProcessKiller`/`AndroidProcessKiller` for the post-import process kill; the user reopens the app manually) + `RulesRepository.importRules` (api, `RulesRepositoryImpl`, `FakeRulesRepository`, new `DbRule.sq` queries) + the `settings_export` `<cache-path>` in `app/src/main/res/xml/logging_file_paths.xml` |
 | Modify the AppMessage protocol | `protocol.md` + `watch/src/connection/packets.c` (C) + `mobile/bluetooth/data/WatchappConnectionImpl.kt` (+ `NotificationDetailsPusher.kt`, `ImageSenderImpl.kt`, `SubmenuControllerImpl.kt`, `BucketlistPackets.kt` if sync is touched) + bump `PROTOCOL_VERSION` in BOTH |
 | Change the notification bucket layout | `WatchSyncerImpl.kt` (serialize) + `watch/src/ui/window_notification/data_loading.c` (deserialize) + `protocol.md` + bump `BUCKET_DATA_VERSION` and `PROTOCOL_VERSION` |
 | Change watch UI | `watch/src/ui/...` (+ resources in `watch/resources/` with `~bw`/`~color` variants registered in `package.json`) |
